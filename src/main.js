@@ -1,17 +1,50 @@
 
-import game from './game';
-import createPlayer from './player'
+import { SCALE, CAMERA_SCALE } from './game';
+import { setupPlayer } from './player'
+import { setupGoal } from './goal';
+import * as level1 from './levels/level-1'
+import setupGreenGuy from './enemy';
+import mainScene from './scene/menu'
+import displayUi from './ui/ui';
+import gameover from './scene/gameover';
+import winScene from './scene/win';
 
 
-setGravity(640);
+
+// Plays background music once the player has clicked once
+loadSound("bg-music", "/assets/audio/bg-music-1.mp3")
+export const bgMusic = play("bg-music", {
+    volume: volume(),
+    loop: true
+})
+
+// Loads one level
+scene('level1', () => {
+	setGravity(640 * SCALE);
+
+	camScale(CAMERA_SCALE, CAMERA_SCALE);
+	const level = level1.loadLevel();
+	const player = setupPlayer(level);
+	setupGreenGuy(level);
+	setupGoal(level);
+
+    displayUi(player);
+});
+
+// Loads the main scene
+scene('main', () => {
+	mainScene();
+});
 
 
-const player = createPlayer(pos(center()), 100);
+// Loads the gameover screen
+scene('gameover', () => {
+	gameover();
+})
 
-game.add([
-	rect(width(), 24),
-	area(),
-	outline(1),
-	pos(0, height() - 24),
-	body({ isStatic: true }),
-])
+// Loads the win screen
+scene('win', () => {
+    winScene();
+})
+
+go('main');
