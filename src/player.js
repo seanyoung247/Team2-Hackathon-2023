@@ -105,7 +105,8 @@ export function setupPlayer(level) {
     const followPlayer = () => {
         let {x,y} = player.pos;
         const halfHeight = (height() / 2) / CAMERA_SCALE;
-
+        // Camera should center player but clamp the bottom of 
+        // the screen to go no lower than the bottom of the level
         y = (y + halfHeight > level.levelHeight()) ?
             level.levelHeight() - halfHeight : y;
         camPos(x,y);
@@ -147,8 +148,6 @@ export function setupPlayer(level) {
                 player.play("run");
             }
         }
-
-        
     });
 
     onKeyDown('d', () => {
@@ -196,7 +195,11 @@ export function setupPlayer(level) {
         if (!player.isGrounded() && !player.isJumping() && player.curAnim() !== 'climb') {
             player.play('falling');
         }
-
+        // If fallen out of level:
+        if (player.pos.y > level.levelHeight) {
+            destroy(player);
+            go('gameover');
+        }
     });
 
     player.onBeforePhysicsResolve(collision => {
