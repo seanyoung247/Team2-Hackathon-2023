@@ -97,6 +97,7 @@ export function player() {
 export function setupPlayer(level) {
     const player = level.get("player")[0];
     const dirKeys = ["w", "s", "a", "d"];
+    const spawn = vec2(player.pos);
     let onLadder = false;
 
     player.play('idle');
@@ -124,10 +125,10 @@ export function setupPlayer(level) {
         if(player.state != "hurt") {
             if (onLadder) {
                 player.move(0, -SPEED/2);
-                setGravity(0)
+                player.gravityScale = 0;
                 if (player.curAnim() !== "climb") player.play("climb");
             } else {
-                setGravity(640 * SCALE);
+                player.gravityScale = 1;
                 if (player.curAnim() === "climb") player.play('idle');
             }
         }
@@ -169,7 +170,7 @@ export function setupPlayer(level) {
             if (player.isGrounded() && !isKeyDown("a") && !isKeyDown("d")) {
                 player.play("idle");
             }
-            setGravity(640 * SCALE);
+            if (!isKeyDown("w")) player.gravityScale = 1;
         });
     });
 
@@ -196,7 +197,10 @@ export function setupPlayer(level) {
         if (!player.isGrounded() && !player.isJumping() && player.curAnim() !== 'climb') {
             player.play('falling');
         }
-
+        if (player.pos.y > (level.levelHeight() + 64)) {
+            // Player has fallen off the map, because Kaboom collision detection is hot garbage.
+            player.pos = vec2(spawn);
+        }
     });
 
     player.onBeforePhysicsResolve(collision => {
